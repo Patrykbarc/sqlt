@@ -1,4 +1,4 @@
-# sqlt
+# sqlter
 
 A lightweight SQL template tag utility for JavaScript that safely handles SQL string interpolation and parameter binding.
 
@@ -21,13 +21,13 @@ A lightweight SQL template tag utility for JavaScript that safely handles SQL st
 ## Installation
 
 ```bash
-npm install sqlt
+npm install sqlter
 ```
 
 ## Usage
 
 ```javascript
-const { sql, raw, escape, caseWhen, join, orderBy, groupBy, limit, transaction } = require("sqlt");
+const { sql, raw, escape, caseWhen, join, orderBy, groupBy, limit, transaction } = require("sqlter");
 
 // Basic usage
 const { query, params } = sql`SELECT * FROM users WHERE id = ${1}`;
