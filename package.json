@@ -29,12 +29,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/sqlt.git"
+    "url": "git+https://github.com/Patrykbarc/sqlt.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/sqlt/issues"
+    "url": "https://github.com/Patrykbarc/sqlt/issues"
   },
-  "homepage": "https://github.com/yourusername/sqlt#readme",
+  "homepage": "https://github.com/Patrykbarc/sqlt#readme",
   "devDependencies": {
     "eslint": "^8.0.0",
     "jest": "^29.0.0",
