@@ -10,14 +10,15 @@ export declare function sql(strings: TemplateStringsArray, ...values: any[]): {
 };
 export declare class Raw {
     value: string;
-    constructor(value: string);
+    params?: any[] | undefined;
+    constructor(value: string, params?: any[] | undefined);
 }
 /**
  * Creates a raw SQL value that won't be escaped
  * @param {string} value - The raw SQL value
  * @returns {Raw} A raw SQL value wrapper
  */
-export declare function raw(value: string): Raw;
+export declare function raw(value: string, params?: any[]): Raw;
 /**
  * Safely escapes a string for SQL
  * @param {string} value - The string to escape

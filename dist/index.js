@@ -13,6 +13,9 @@ export function sql(strings, ...values) {
             return result;
         }
         if (value !== undefined && value !== null) {
+            if (value instanceof Raw) {
+                return result + str + value.value;
+            }
             if (Array.isArray(value)) {
                 const placeholders = value.map(() => "?").join(", ");
                 params.push(...value);
@@ -35,8 +38,9 @@ export function sql(strings, ...values) {
     };
 }
 export class Raw {
-    constructor(value) {
+    constructor(value, params) {
         this.value = value;
+        this.params = params;
     }
 }
 /**
@@ -44,8 +48,8 @@ export class Raw {
  * @param {string} value - The raw SQL value
  * @returns {Raw} A raw SQL value wrapper
  */
-export function raw(value) {
-    return new Raw(value);
+export function raw(value, params) {
+    return new Raw(value, params);
 }
 /**
  * Safely escapes a string for SQL
@@ -53,15 +57,15 @@ export function raw(value) {
  * @returns {string} The escaped string
  */
 export function escape(value) {
-    return value.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, (char) => {
+    return value.replace(/[\u0000\u0008\u0009\u001A\n\r"'\\\%]/g, (char) => {
         switch (char) {
-            case "\0":
+            case "\u0000":
                 return "\\0";
-            case "\x08":
+            case "\u0008":
                 return "\\b";
-            case "\x09":
+            case "\u0009":
                 return "\\t";
-            case "\x1a":
+            case "\u001A":
                 return "\\z";
             case "\n":
                 return "\\n";
@@ -85,9 +89,13 @@ export function escape(value) {
  */
 export function caseWhen(field, cases) {
     const conditions = Object.entries(cases)
-        .map(([value, result]) => `WHEN ${field} = ? THEN ?`)
+        .map(() => `WHEN ${field} = ? THEN ?`)
         .join(" ");
-    return raw(`CASE ${conditions} END`);
+    const params = Object.entries(cases).flatMap(([condition, result]) => [
+        condition,
+        result,
+    ]);
+    return raw(`CASE ${conditions} END`, params);
 }
 export function join(joins, type = "INNER") {
     const joinClauses = Object.entries(joins)

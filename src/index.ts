@@ -43,7 +43,10 @@ export function sql(
 }
 
 export class Raw {
-  constructor(public value: string) {}
+  constructor(
+    public value: string,
+    public params?: any[],
+  ) {}
 }
 
 /**
@@ -51,8 +54,8 @@ export class Raw {
  * @param {string} value - The raw SQL value
  * @returns {Raw} A raw SQL value wrapper
  */
-export function raw(value: string): Raw {
-  return new Raw(value);
+export function raw(value: string, params?: any[]): Raw {
+  return new Raw(value, params);
 }
 
 /**
@@ -61,15 +64,15 @@ export function raw(value: string): Raw {
  * @returns {string} The escaped string
  */
 export function escape(value: string): string {
-  return value.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, (char) => {
+  return value.replace(/[\u0000\u0008\u0009\u001A\n\r"'\\\%]/g, (char) => {
     switch (char) {
-      case "\0":
+      case "\u0000":
         return "\\0";
-      case "\x08":
+      case "\u0008":
         return "\\b";
-      case "\x09":
+      case "\u0009":
         return "\\t";
-      case "\x1a":
+      case "\u001A":
         return "\\z";
       case "\n":
         return "\\n";
@@ -94,9 +97,13 @@ export function escape(value: string): string {
  */
 export function caseWhen(field: string, cases: Record<string, any>): Raw {
   const conditions = Object.entries(cases)
-    .map(([value, result]) => `WHEN ${field} = ? THEN ?`)
+    .map(() => `WHEN ${field} = ? THEN ?`)
     .join(" ");
-  return raw(`CASE ${conditions} END`);
+  const params = Object.entries(cases).flatMap(([condition, result]) => [
+    condition,
+    result,
+  ]);
+  return raw(`CASE ${conditions} END`, params);
 }
 
 /**
@@ -110,7 +117,7 @@ type JoinType = "INNER" | "LEFT" | "RIGHT" | "FULL";
 
 export function join(
   joins: Record<string, string>,
-  type: JoinType = "INNER"
+  type: JoinType = "INNER",
 ): Raw {
   const joinClauses = Object.entries(joins)
     .map(([table, condition]) => `${type} JOIN ${table} ON ${condition}`)
