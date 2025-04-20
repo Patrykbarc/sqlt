@@ -1,6 +1,6 @@
 {
   "name": "sqlter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Patryk Barć",
   "description": "A lightweight SQL template tag utility for JavaScript that safely handles SQL string interpolation and parameter binding",
   "main": "dist/index.js",
