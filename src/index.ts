@@ -1,10 +1,13 @@
 /**
- * A simple utility function that converts SQL template literals into prepared statement format
+ * A utility function that converts SQL template literals into prepared statement format
  * @param {TemplateStringsArray} strings - Template literal strings
  * @param {...any} values - Values to be inserted
  * @returns {{query: string, params: any[]}} Object containing the query with ? placeholders and array of parameters
  */
-export function sql(strings: TemplateStringsArray, ...values: any[]): { query: string; params: any[] } {
+export function sql(
+  strings: TemplateStringsArray,
+  ...values: any[]
+): { query: string; params: any[] } {
   const params: any[] = [];
   const query = strings.reduce((result, str, i) => {
     const value = values[i];
@@ -96,10 +99,16 @@ export function caseWhen(field: string, cases: Record<string, any>): Raw {
 /**
  * Creates a JOIN clause
  * @param {Record<string, string>} joins - Object containing join conditions
- * @param {string} [type='INNER'] - Join type (INNER, LEFT, RIGHT, FULL)
+ * @param {JoinType} [type='INNER'] - Join type (INNER, LEFT, RIGHT, FULL)
  * @returns {Raw} A raw SQL JOIN clause
  */
-export function join(joins: Record<string, string>, type: string = "INNER"): Raw {
+
+type JoinType = "INNER" | "LEFT" | "RIGHT" | "FULL";
+
+export function join(
+  joins: Record<string, string>,
+  type: JoinType = "INNER"
+): Raw {
   const joinClauses = Object.entries(joins)
     .map(([table, condition]) => `${type} JOIN ${table} ON ${condition}`)
     .join(" ");
@@ -111,7 +120,7 @@ export function join(joins: Record<string, string>, type: string = "INNER"): Raw
  * @param {Record<string, 'ASC' | 'DESC'> | string} order - Object containing field:direction pairs or string
  * @returns {Raw} A raw SQL ORDER BY clause
  */
-export function orderBy(order: Record<string, 'ASC' | 'DESC'> | string): Raw {
+export function orderBy(order: Record<string, "ASC" | "DESC"> | string): Raw {
   if (typeof order === "string") {
     return raw(`ORDER BY ${order}`);
   }
@@ -170,4 +179,4 @@ export function transaction(): Transaction {
       };
     },
   };
-} 
+}
