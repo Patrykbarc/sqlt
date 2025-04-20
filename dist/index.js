@@ -1,5 +1,5 @@
 /**
- * A simple utility function that converts SQL template literals into prepared statement format
+ * A utility function that converts SQL template literals into prepared statement format
  * @param {TemplateStringsArray} strings - Template literal strings
  * @param {...any} values - Values to be inserted
  * @returns {{query: string, params: any[]}} Object containing the query with ? placeholders and array of parameters
@@ -89,12 +89,6 @@ export function caseWhen(field, cases) {
         .join(" ");
     return raw(`CASE ${conditions} END`);
 }
-/**
- * Creates a JOIN clause
- * @param {Record<string, string>} joins - Object containing join conditions
- * @param {string} [type='INNER'] - Join type (INNER, LEFT, RIGHT, FULL)
- * @returns {Raw} A raw SQL JOIN clause
- */
 export function join(joins, type = "INNER") {
     const joinClauses = Object.entries(joins)
         .map(([table, condition]) => `${type} JOIN ${table} ON ${condition}`)
