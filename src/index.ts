@@ -1,11 +1,11 @@
 /**
  * A simple utility function that converts SQL template literals into prepared statement format
- * @param {string} strings - Template literal strings
+ * @param {TemplateStringsArray} strings - Template literal strings
  * @param {...any} values - Values to be inserted
  * @returns {{query: string, params: any[]}} Object containing the query with ? placeholders and array of parameters
  */
-function sql(strings, ...values) {
-  const params = [];
+export function sql(strings: TemplateStringsArray, ...values: any[]): { query: string; params: any[] } {
+  const params: any[] = [];
   const query = strings.reduce((result, str, i) => {
     const value = values[i];
     // Ignore only if the value is a conditional statement (contains sql``)
@@ -36,10 +36,8 @@ function sql(strings, ...values) {
   };
 }
 
-class Raw {
-  constructor(value) {
-    this.value = value;
-  }
+export class Raw {
+  constructor(public value: string) {}
 }
 
 /**
@@ -47,7 +45,7 @@ class Raw {
  * @param {string} value - The raw SQL value
  * @returns {Raw} A raw SQL value wrapper
  */
-function raw(value) {
+export function raw(value: string): Raw {
   return new Raw(value);
 }
 
@@ -56,7 +54,7 @@ function raw(value) {
  * @param {string} value - The string to escape
  * @returns {string} The escaped string
  */
-function escape(value) {
+export function escape(value: string): string {
   return value.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, (char) => {
     switch (char) {
       case "\0":
@@ -85,10 +83,10 @@ function escape(value) {
 /**
  * Creates a SQL CASE statement
  * @param {string} field - The field to check
- * @param {Object} cases - The cases to check against
+ * @param {Record<string, any>} cases - The cases to check against
  * @returns {Raw} A raw SQL CASE statement
  */
-function caseWhen(field, cases) {
+export function caseWhen(field: string, cases: Record<string, any>): Raw {
   const conditions = Object.entries(cases)
     .map(([value, result]) => `WHEN ${field} = ? THEN ?`)
     .join(" ");
@@ -97,11 +95,11 @@ function caseWhen(field, cases) {
 
 /**
  * Creates a JOIN clause
- * @param {Object} joins - Object containing join conditions
+ * @param {Record<string, string>} joins - Object containing join conditions
  * @param {string} [type='INNER'] - Join type (INNER, LEFT, RIGHT, FULL)
  * @returns {Raw} A raw SQL JOIN clause
  */
-function join(joins, type = "INNER") {
+export function join(joins: Record<string, string>, type: string = "INNER"): Raw {
   const joinClauses = Object.entries(joins)
     .map(([table, condition]) => `${type} JOIN ${table} ON ${condition}`)
     .join(" ");
@@ -110,10 +108,10 @@ function join(joins, type = "INNER") {
 
 /**
  * Creates an ORDER BY clause
- * @param {Object|string} order - Object containing field:direction pairs or string
+ * @param {Record<string, 'ASC' | 'DESC'> | string} order - Object containing field:direction pairs or string
  * @returns {Raw} A raw SQL ORDER BY clause
  */
-function orderBy(order) {
+export function orderBy(order: Record<string, 'ASC' | 'DESC'> | string): Raw {
   if (typeof order === "string") {
     return raw(`ORDER BY ${order}`);
   }
@@ -125,10 +123,10 @@ function orderBy(order) {
 
 /**
  * Creates a GROUP BY clause
- * @param {string|string[]} fields - Fields to group by
+ * @param {string | string[]} fields - Fields to group by
  * @returns {Raw} A raw SQL GROUP BY clause
  */
-function groupBy(fields) {
+export function groupBy(fields: string | string[]): Raw {
   const fieldList = Array.isArray(fields) ? fields.join(", ") : fields;
   return raw(`GROUP BY ${fieldList}`);
 }
@@ -139,23 +137,28 @@ function groupBy(fields) {
  * @param {number} [offset] - Number of rows to skip
  * @returns {Raw} A raw SQL LIMIT clause
  */
-function limit(limit, offset) {
+export function limit(limit: number, offset?: number): Raw {
   if (offset !== undefined) {
     return raw(`LIMIT ? OFFSET ?`);
   }
   return raw(`LIMIT ?`);
 }
 
+interface Transaction {
+  add: (strings: TemplateStringsArray, ...values: any[]) => void;
+  commit: () => { query: string; params: any[] };
+}
+
 /**
  * Creates a transaction object
  * @returns {Transaction} A transaction object
  */
-function transaction() {
-  const queries = [];
-  const params = [];
+export function transaction(): Transaction {
+  const queries: string[] = [];
+  const params: any[] = [];
 
   return {
-    add(strings, ...values) {
+    add(strings: TemplateStringsArray, ...values: any[]) {
       const { query, params: queryParams } = sql(strings, ...values);
       queries.push(query);
       params.push(...queryParams);
@@ -167,16 +170,4 @@ function transaction() {
       };
     },
   };
-}
-
-module.exports = {
-  sql,
-  raw,
-  escape,
-  caseWhen,
-  join,
-  orderBy,
-  groupBy,
-  limit,
-  transaction,
-};
+} 
