@@ -61,14 +61,15 @@ export declare function groupBy(fields: string | string[]): Raw;
 export declare function limit(limit: number, offset?: number): Raw;
 interface Transaction {
     add: (strings: TemplateStringsArray, ...values: any[]) => void;
-    commit: () => {
+    commit: () => Promise<{
         query: string;
         params: any[];
-    };
+    }>;
+    rollback: () => void;
 }
 /**
  * Creates a transaction object
  * @returns {Transaction} A transaction object
  */
-export declare function transaction(): Transaction;
+export declare function transaction(): Promise<Transaction>;
 export {};

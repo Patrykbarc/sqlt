@@ -142,20 +142,24 @@ export function limit(limit, offset) {
  * Creates a transaction object
  * @returns {Transaction} A transaction object
  */
-export function transaction() {
+export async function transaction() {
     const queries = [];
     const params = [];
     return {
-        add(strings, ...values) {
+        async add(strings, ...values) {
             const { query, params: queryParams } = sql(strings, ...values);
             queries.push(query);
             params.push(...queryParams);
         },
-        commit() {
+        async commit() {
             return {
                 query: queries.join("; "),
                 params,
             };
+        },
+        async rollback() {
+            queries.length = 0;
+            params.length = 0;
         },
     };
 }
