@@ -165,28 +165,33 @@ export function limit(limit: number, offset?: number): Raw {
 
 interface Transaction {
   add: (strings: TemplateStringsArray, ...values: any[]) => void;
-  commit: () => { query: string; params: any[] };
+  commit: () => Promise<{ query: string; params: any[] }>;
+  rollback: () => void;
 }
 
 /**
  * Creates a transaction object
  * @returns {Transaction} A transaction object
  */
-export function transaction(): Transaction {
+export async function transaction(): Promise<Transaction> {
   const queries: string[] = [];
   const params: any[] = [];
 
   return {
-    add(strings: TemplateStringsArray, ...values: any[]) {
+   async add(strings: TemplateStringsArray, ...values: any[]) {
       const { query, params: queryParams } = sql(strings, ...values);
       queries.push(query);
       params.push(...queryParams);
     },
-    commit() {
+   async commit() {
       return {
         query: queries.join("; "),
         params,
       };
+    },
+    async rollback() {
+      queries.length = 0;
+      params.length = 0;
     },
   };
 }
