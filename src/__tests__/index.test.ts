@@ -62,7 +62,7 @@ describe("caseWhen function", () => {
     const cases = { active: 1, inactive: 0 };
     const result = caseWhen("status", cases);
     expect(result.value).toBe(
-      "CASE WHEN status = ? THEN ? WHEN status = ? THEN ? END"
+      "CASE WHEN status = ? THEN ? WHEN status = ? THEN ? END",
     );
   });
 });
@@ -119,13 +119,13 @@ describe("limit function", () => {
 });
 
 describe("transaction function", () => {
-  test("creates and commits transaction", () => {
-    const t = transaction();
+  test("creates and commits transaction", async () => {
+    const t = await transaction();
     t.add`INSERT INTO users (name) VALUES (${"John"})`;
     t.add`INSERT INTO orders (user_id) VALUES (${1})`;
-    const { query, params } = t.commit();
+    const { query, params } = await t.commit();
     expect(query).toBe(
-      "INSERT INTO users (name) VALUES (?); INSERT INTO orders (user_id) VALUES (?)"
+      "INSERT INTO users (name) VALUES (?); INSERT INTO orders (user_id) VALUES (?)",
     );
     expect(params).toEqual(["John", 1]);
   });
