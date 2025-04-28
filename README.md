@@ -27,75 +27,86 @@ npm install sqlter
 ## Usage
 
 ```javascript
-const { sql, raw, escape, caseWhen, join, orderBy, groupBy, limit, transaction } = require("sqlter");
+const {
+	sql,
+	raw,
+	escape,
+	caseWhen,
+	join,
+	orderBy,
+	groupBy,
+	limit,
+	transaction,
+} = require('sqlter')
 
 // Basic usage
-const { query, params } = sql`SELECT * FROM users WHERE id = ${1}`;
+const { query, params } = sql`SELECT * FROM users WHERE id = ${1}`
 // query: "SELECT * FROM users WHERE id = ?"
 // params: [1]
 
 // With boolean values
-const isActive = true;
-const { query, params } = sql`SELECT * FROM users WHERE active = ${isActive}`;
+const isActive = true
+const { query, params } = sql`SELECT * FROM users WHERE active = ${isActive}`
 // query: "SELECT * FROM users WHERE active = ?"
 // params: [true]
 
 // With arrays
-const ids = [1, 2, 3];
-const { query, params } = sql`SELECT * FROM users WHERE id IN ${ids}`;
+const ids = [1, 2, 3]
+const { query, params } = sql`SELECT * FROM users WHERE id IN ${ids}`
 // query: "SELECT * FROM users WHERE id IN (?, ?, ?)"
 // params: [1, 2, 3]
 
 // With objects
-const user = { name: "John", age: 25 };
-const { query, params } = sql`INSERT INTO users SET ${user}`;
+const user = { name: 'John', age: 25 }
+const { query, params } = sql`INSERT INTO users SET ${user}`
 // query: "INSERT INTO users SET name = ?, age = ?"
 // params: ["John", 25]
 
 // Raw SQL values
-const { query, params } = sql`SELECT * FROM users WHERE created_at > ${raw("NOW()")}`;
+const { query, params } =
+	sql`SELECT * FROM users WHERE created_at > ${raw('NOW()')}`
 // query: "SELECT * FROM users WHERE created_at > NOW()"
 // params: []
 
 // String escaping
-const name = "O'Connor";
-const { query, params } = sql`SELECT * FROM users WHERE name = ${escape(name)}`;
+const name = "O'Connor"
+const { query, params } = sql`SELECT * FROM users WHERE name = ${escape(name)}`
 // query: "SELECT * FROM users WHERE name = ?"
 // params: ["O\\'Connor"]
 
 // CASE statements
 const statusMap = {
-  active: "Aktywny",
-  inactive: "Nieaktywny",
-  pending: "Oczekujący"
-};
+	active: 'Aktywny',
+	inactive: 'Nieaktywny',
+	pending: 'Oczekujący',
+}
 const { query, params } = sql`
   SELECT 
-    ${caseWhen("status", statusMap)} as status_text
+    ${caseWhen('status', statusMap)} as status_text
   FROM users
-`;
+`
 // query: "SELECT CASE WHEN status = ? THEN ? WHEN status = ? THEN ? WHEN status = ? THEN ? END as status_text FROM users"
 // params: ["active", "Aktywny", "inactive", "Nieaktywny", "pending", "Oczekujący"]
 
 // JOIN clauses
 const joins = {
-  posts: "users.id = posts.user_id",
-  comments: "posts.id = comments.post_id"
-};
+	posts: 'users.id = posts.user_id',
+	comments: 'posts.id = comments.post_id',
+}
 const { query, params } = sql`
   SELECT users.*, posts.title, comments.content
   FROM users
-  ${join(joins, "LEFT")}
-`;
+  ${join(joins, 'LEFT')}
+`
 // query: "SELECT users.*, posts.title, comments.content FROM users LEFT JOIN posts ON users.id = posts.user_id LEFT JOIN comments ON posts.id = comments.post_id"
 // params: []
 
 // ORDER BY
-const order = { name: "ASC", age: "DESC" };
+const order = { name: 'ASC', age: 'DESC' }
 const { query, params } = sql`
   SELECT * FROM users
   ${orderBy(order)}
-`;
+`
 // query: "SELECT * FROM users ORDER BY name ASC, age DESC"
 // params: []
 
@@ -103,8 +114,8 @@ const { query, params } = sql`
 const { query, params } = sql`
   SELECT department, COUNT(*) as count
   FROM users
-  ${groupBy("department")}
-`;
+  ${groupBy('department')}
+`
 // query: "SELECT department, COUNT(*) as count FROM users GROUP BY department"
 // params: []
 
@@ -112,39 +123,43 @@ const { query, params } = sql`
 const { query, params } = sql`
   SELECT * FROM users
   ${limit(10, 20)}
-`;
+`
 // query: "SELECT * FROM users LIMIT ? OFFSET ?"
 // params: [10, 20]
 
 // Transactions
-const tx = transaction();
-tx.add`INSERT INTO users (name) VALUES (${"John"})`;
-tx.add`UPDATE stats SET count = count + 1`;
-const { query, params } = tx.commit();
+const tx = await transaction()
+tx.add`INSERT INTO users (name) VALUES (${'John'})`
+tx.add`UPDATE stats SET count = count + 1`
+const { query, params } = await tx.commit()
 // query: "INSERT INTO users (name) VALUES (?); UPDATE stats SET count = count + 1"
 // params: ["John"]
 
+// Example of transaction rollback
+const tx2 = await transaction()
+tx2.add`INSERT INTO users (name) VALUES (${'Jane'})`
+// If something goes wrong
+tx2.rollback()
+
 // Multiple interpolations
-const userId = 1;
-const limit = 10;
-const {
-  query,
-  params,
-} = sql`SELECT * FROM users WHERE id = ${userId} LIMIT ${limit}`;
+const userId = 1
+const limit = 10
+const { query, params } =
+	sql`SELECT * FROM users WHERE id = ${userId} LIMIT ${limit}`
 // query: "SELECT * FROM users WHERE id = ? LIMIT ?"
 // params: [1, 10]
 
 // Conditional statements
-const isAdmin = true;
-const minAge = 18;
-const status = "active";
+const isAdmin = true
+const minAge = 18
+const status = 'active'
 const { query, params } = sql`
   SELECT * FROM users 
   WHERE 1=1
-  ${isAdmin ? sql`AND role = 'admin'` : ""}
-  ${minAge ? sql`AND age >= ${minAge}` : ""}
-  ${status ? sql`AND status = ${status}` : ""}
-`;
+  ${isAdmin ? sql`AND role = 'admin'` : ''}
+  ${minAge ? sql`AND age >= ${minAge}` : ''}
+  ${status ? sql`AND status = ${status}` : ''}
+`
 // query: "SELECT * FROM users WHERE 1=1 AND role = 'admin' AND age >= ? AND status = ?"
 // params: [18, 'active']
 ```
@@ -260,9 +275,11 @@ Creates a transaction object.
 
 #### Returns
 
-A transaction object with methods:
-- `add`: Add a query to the transaction
-- `commit`: Commit the transaction and return the combined query and parameters
+A Promise that resolves to a transaction object with methods:
+
+- `add`: Async function to add a query to the transaction
+- `commit`: Async function to commit the transaction and return the combined query and parameters
+- `rollback`: Function to clear all queries in the transaction
 
 ## License
 
